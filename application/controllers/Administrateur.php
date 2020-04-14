@@ -265,6 +265,7 @@ class Administrateur extends CI_Controller
 		'EmailInformationHTML'=>$this->input->post('EmailInfo'),
 		'EnCours'=>$encours
 		);
+		//array
 	$donnees=array(
 	'Annee'=>$annee,
 	'NoEvenement'=>$noEvenement
