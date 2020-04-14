@@ -366,7 +366,7 @@ class Visiteur extends CI_Controller
 
    public function catalogueEvenement()            
    {  
-      
+      $donnees['Evenements']=$this->ModeleEvenement->getEvMarchParent();
    } 
 
 
@@ -438,7 +438,7 @@ class Visiteur extends CI_Controller
       $this->load->view('templates/PiedDePagePrincipal');
    }
 
-   public function ajouterProduitAuPanier($NoEvenement,$Annee)// ajout produit au panier
+   /* public function ajouterProduitAuPanier($NoEvenement,$Annee)// ajout produit au panier
    {
       $Produit=$this->ModeleProduit->getProduits($NoEvenement,$Annee);//Récupérer un produit spécifique par ID
       $i=1;
@@ -460,15 +460,69 @@ class Visiteur extends CI_Controller
       $this->load->view('templates/PiedDePagePrincipal');
       //redirect('visiteur/Panier');
 
-   }
+   } */
 
 
    /**********************************************************************
    **                    fonction propre au panier                     ***
    **********************************************************************/
-
-
    function indexPanier()
+   {
+      $this->load->view('templates/EntetePrincipal');
+      $data['data']=$this->ModeleProduit->get_all_produit();
+      $this->load->view('visiteur/vuePanier',$data);
+   }
+
+function ajouterProduitAuPanier(){ 
+   $data = array(
+      'id' => $this->input->post('NoProduit'), 
+      'name' => $this->input->post('LibelleCourt'), 
+      'price' => $this->input->post('Prix'), 
+      'qty' => $this->input->post('Stock'), 
+   );
+   $this->cart->insert($data);
+   echo $this->voirPanier(); 
+}
+
+function voirPanier(){ 
+   $output = '';
+   $no = 0;
+   foreach ($this->cart->contents() as $items) {
+      $no++;
+      $output .='
+         <tr>
+            <td>'.$items['name'].'</td>
+            <td>'.number_format($items['price']).'</td>
+            <td>'.$items['qty'].'</td>
+            <td>'.number_format($items['subtotal']).'</td>
+            <td><button type="button" id="'.$items['rowid'].'" class="romove_cart btn btn-danger btn-sm">Cancel</button></td>
+         </tr>
+      ';
+   }
+   $output .= '
+      <tr>
+         <th colspan="3">Total</th>
+         <th colspan="2">'.'TotalHT '.number_format($this->cart->total()).'</th>
+      </tr>
+   ';
+   return $output;
+}
+
+function chargerPanier(){ 
+   echo $this->voirPanier();
+}
+
+function suppressionPanier()
+{ 
+   $data = array(
+      'rowid' => $this->input->post('row_id'), 
+      'qty' => 0, 
+   );
+   $this->cart->update($data);
+   echo $this->voirPanier();
+}
+
+   /* function indexPanier()
    {
       $data = array();
       $data['ProduitsDuPanier'] = $this->cart->contents();
@@ -494,21 +548,21 @@ class Visiteur extends CI_Controller
       
       // Retourne la réponse
       echo $update?'ok':'err';
-   }
+   } */
   
-   function removeItem($rowid)
+   /* function removeItem($rowid)
    {
       // Retire les produits du panier
       $remove = $this->cart->remove($rowid);
       //redirect('visiteur/Panier');
-   }
+   } */
   
    /**********************************************************************
    **                    fonction pour paiement                        ***
    **********************************************************************/
 
 
-  function indexCommande()
+  /* function indexCommande()
   {
       if($this->cart->total_items() <= 0)// Si panier vide redirige vers lesProduitsEvenement
          {
@@ -547,9 +601,9 @@ class Visiteur extends CI_Controller
          $data['custData'] = $custData;// Données clients
          $data['cartItems'] = $this->cart->contents();// Récupérer les données du panier de la session
          $this->load->view($this->controller.'/index', $data);// Transférer les données des produits à la vue
-   }
+   } */
 
-   function placeOrder($custID)// Insérer les données de la commande
+   /* function placeOrder($custID)// Insérer les données de la commande
    {
       $ordData = array(
       'customer_id' => $custID,
@@ -580,14 +634,14 @@ class Visiteur extends CI_Controller
                }  
          }
       return false;
-   }
+   } */
 
 
-function orderSuccess($ordID)
+/* function orderSuccess($ordID)
 {
    $data['order'] = $this->product->obtenirCommande($ordID);//Récupérer les données de commande dans la base de données
    $this->load->view($this->controller.'/order-success', $data); // Affiche les détails de la commande 
-}
+} */
 
 
 

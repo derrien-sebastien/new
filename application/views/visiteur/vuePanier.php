@@ -1,114 +1,92 @@
-<?php
-session_start();
-include_once("Visiteur.php");
 
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<title>Votre panier</title>
-</head>
 <body>
-
-<form method="post" action="panier.php">
-<table style="width: 400px">
-    <tr>
-        <td colspan="4">Votre panier</td>
-    </tr>
-    <tr>
-        <td>Libellé</td>
-        <td>Quantité</td>
-        <td>Prix Unitaire</td>
-        <td>Action</td>
-    </tr>
-
-
-    <?php
-    var_dump($_POST);
-    if (creationPanier())
-    {
-        $nbProduit=count($_SESSION['panier']['libelleProduit']);
-        if ($nbProduit <= 0)
-        echo "<tr><td>Votre panier est vide </ td></tr>";
-        else
-        {
-            for ($i=0 ;$i < $nbProduit ; $i++)
-            {
-                echo "<tr>";
-                echo "<td>".htmlspecialchars($_SESSION['panier']['libelleProduit'][$i])."</ td>";
-                echo "<td><input type=\"text\" size=\"4\" name=\"q[]\" value=\"".htmlspecialchars($_SESSION['panier']['qteProduit'][$i])."\"/></td>";
-                echo "<td>".htmlspecialchars($_SESSION['panier']['prixProduit'][$i])."</td>";
-                echo "<td><a href=\"".htmlspecialchars("panier.php?action=suppression&l=".rawurlencode($_SESSION['panier']['libelleProduit'][$i]))."\">XX</a></td>";
-                echo "</tr>";
-            }
-
-            echo "<tr><td colspan=\"2\"> </td>";
-            echo "<td colspan=\"2\">";
-            echo "Total : ".MontantGlobal();
-            echo "</td></tr>";
-
-            echo "<tr><td colspan=\"4\">";
-            echo "<input type=\"submit\" value=\"Rafraichir\"/>";
-            echo "<input type=\"hidden\" name=\"action\" value=\"refresh\"/>";
-
-            echo "</td></tr>";
-        }
-    }
-    $erreur = false;
-
-    $action = (isset($_POST['action'])? $_POST['action']:  (isset($_GET['action'])? $_GET['action']:null )) ;
-    if($action !== null)
-        {
-            if(!in_array($action,array('ajout', 'suppression', 'refresh')))
+<div class="container"><br/>
+	<h2>Catalogue </h2>
+	<hr/>
+	<div class="row">
+		<div class="col-md-8">
+			<h4>Nos Produits</h4>
+			<div class="row">
+			<?php foreach ($data->result() as $row) : ?>
+				<div class="col-md-4">
+					<div class="thumbnail">
+						<img width="200" src="<?php echo base_url().'assets/images/'.$row->Img_Produit;?>">
+						<div class="caption">
+							<h4><?php echo $row->LibelleCourt;?></h4>
+							<div class="row">
+								<div class="col-md-7">
+									<h4><?php echo ($row->Prix);?></h4>
+								</div>
+								<div class="col-md-5">
+									<input type="number" name="quantity" id="<?php echo $row->NoProduit;?>" value="1" class="quantity form-control">
+								</div>
+							</div>
+							<button class="add_cart btn btn-success btn-block" data-productid="<?php echo $row->NoProduit;?>" data-productname="<?php echo $row->LibelleCourt;?>" data-productprice="<?php echo $row->Prix;?>">Ajouter</button>
+						</div>
+					</div>
+				</div>
+			<?php endforeach;?>
+                
             
-            $erreur=true;
+			</div>
 
-            //récuperation des variables en POST ou GET
-            $l = (isset($_POST['l'])? $_POST['l']:  (isset($_GET['l'])? $_GET['l']:null )) ;
-            $p = (isset($_POST['p'])? $_POST['p']:  (isset($_GET['p'])? $_GET['p']:null )) ;
-            $q = (isset($_POST['q'])? $_POST['q']:  (isset($_GET['q'])? $_GET['q']:null )) ;
+		</div>
+		<div class="col-md-4">
+			<h4>Votre Panier</h4>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Produit choisi</th>
+						<th>Prix du produit</th>
+						<th>Quantité choisie</th>
+						<th>Votre Total</th>
+						<th>Vos Actions</th>
+					</tr>
+				</thead>
+				<tbody id="detail_cart">
 
-            //Suppression des espaces verticaux
-            $l = preg_replace('#\v#', '',$l);
-            //On vérifie que $p soit un float
-            $p = floatval($p);
+				</tbody>
+				
+			</table>
+		</div>
+	</div>
+</div>
 
-            //On traite $q qui peut être un entier simple ou un tableau d'entiers
-    
-            if (is_array($q))
-                {
-                    $QteProduits = array();
-                    $i=0;
-                    foreach ($q as $contenu)
-                        {
-                            $QteProduits[$i++] = intval($contenu);
-                        }
-                }
-                else
-                    $q = intval($q);
-        }
-        if (!$erreur)
-            {
-                switch($action)
-                {
-                    Case "ajout":
-                    ajouterArticle($l,$q,$p);
-                    break;
-                    Case "suppression":
-                    supprimerArticle($l);
-                    break;
-                    Case "refresh" :
-                    for ($i = 0 ; $i < count($QteProduits) ; $i++)
-                {
-                modifierQTeArticle($_SESSION['panier']['libelleProduit'][$i],round($QteProduits[$i]));
-            }
-            break;
-            Default:
-            break;
-        }
-    }
-    ?>
-</table>
-</form>
+<script type="text/javascript" src="<?php echo base_url().'assets/js/jquery-3.2.1.js'?>"></script>
+<script type="text/javascript" src="<?php echo base_url().'assets/js/bootstrap2.0.js'?>"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.ajouterProduitAuPanier').click(function(){
+			var NoProduit   = $(this).data("productid");
+			var LibelleCourt  = $(this).data("productname");
+			var Prix = $(this).data("productprice");
+			var quantity   	  = $('#' + NoProduit).val();
+			$.ajax({
+				url : "<?php echo site_url('visiteur/ajouterProduitAuPanier');?>",
+				method : "POST",
+				data : {NoProduit: NoProduit, LibelleCourt: LibelleCourt, Prix: Prix, Stock: Stock},
+				success: function(data){
+					$('#detail_cart').html(data);
+				}
+			});
+		});
+
+		
+		$('#detail_cart').load("<?php echo site_url('visiteur/chargerPanier');?>");
+
+		
+		$(document).on('click','.romove_cart',function(){
+			var row_id=$(this).attr("id"); 
+			$.ajax({
+				url : "<?php echo site_url('visiteur/suppressionPanier');?>",
+				method : "POST",
+				data : {row_id : row_id},
+				success :function(data){
+					$('#detail_cart').html(data);
+				}
+			});
+		});
+	});
+</script>
 </body>
 </html>

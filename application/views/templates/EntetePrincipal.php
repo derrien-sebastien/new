@@ -56,6 +56,9 @@ defined('BASEPATH')OR exit('No direct script access allowed');
                       <li>
                         <a href="<?php echo site_url('visiteur/nosEvenements') ?>">Nos Evenements</a>
                       </li>
+                      <li>
+                        <a href="<?php echo site_url('visiteur/indexPanier') ?>">Panier</a>
+                      </li>
                       <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gestion compte<!--lien activation des evenement-->
                           <span class="caret"></span>
